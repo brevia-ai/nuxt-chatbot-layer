@@ -36,10 +36,10 @@
             <div class="px-1.5 pb-1" :class="(item.evaluation == null) ? 'context-icon' : ''">
               <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-[--color-text-success]" />
               <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-[--color-text-error]" />
-              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
+              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="" />
             </div>
             <div v-if="item.evaluation == null" class="px-1.5 pb-1 context-icon">
-              <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
+              <Icon name="ph:thumbs-down-fill" class="text-white" @click="" />
             </div>
             <slot name="extra-icons"></slot>
           </div>
@@ -47,7 +47,7 @@
       </div>
     </div>
   </div>
-  <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-white overflow-hidden">
+  <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
       <!-- SUGGESTED QUESTIONS -->
     <div v-if="config.public.exampleQuestions.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
       <button v-for="q in config.public.exampleQuestions" class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85" @click="submitExample(q)">
@@ -59,7 +59,7 @@
         ref="input"
         v-model.trim="prompt"
         type="text"
-        class="grow text-lg p-2 rounded border border-sky-500 disabled:bg-neutral-100 disabled:border-neutral-300 shadow-md disabled:shadow-none"
+        class=" grow text-lg p-2 rounded border border-neutral-800 disabled:bg-neutral-100 disabled:border-neutral-300 shadow-md disabled:shadow-none"
         :disabled="isBusy || messagesLeft == 0"
         @keydown.enter="submit"
       />
@@ -72,8 +72,8 @@
 </template>
 
 <script setup lang="ts">
-//import '@/assets/style.css';
-//const { $openModal } = useNuxtApp();
+
+const { $openModal } = useNuxtApp();
 const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
 const props = defineProps(['isDemoChatbot', 'collection', 'isEmbedded']);
@@ -87,12 +87,6 @@ interface DialogItem {
   error: boolean;
 }
 
-interface Feedback {
-  uuid: string;
-  session: string;
-  evaluation: boolean;
-}
-
 const dialogZone = ref();
 const isBusy = ref(false);
 const prompt = ref('');
@@ -103,8 +97,6 @@ const botName = ref('Assistenza');
 const docs = ref<any>([]);
 const historyId = ref('');
 const canSeeDocs = ref(false);
-const feedbackModalOpen = ref(false);
-const feedback = ref<Feedback>({uuid:'', evaluation:true, session:''});
 const session = useCookie('session');
 const messagesLeft = ref(parseInt(config.public.maxMessages));
 let docsJsonString = '';
@@ -119,10 +111,8 @@ const responseFormat = ref('text');
 
 onBeforeMount(async () => {
   if(config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
-  console.log("session:",session);
   collectionName = props.collection.name;
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
-  console.log(props.collection);
   if(session.value){
     await loadPreviousMessages(session.value);
   } else {
@@ -133,7 +123,6 @@ onBeforeMount(async () => {
 
 onMounted(() => {
   nextTick(() => dialogZone.value.scrollTo({top: dialogZone.value.scrollHeight ,behavior: "smooth"}));
-  console.log(dialog)
 })
 
 watch(isBusy, (val) => {
@@ -189,7 +178,6 @@ const streamingFetchRequest = async () => {
   docsJsonString = '';
   responseEnded = false;
   canSeeDocs.value = false;
-  console.log(collectionName);
   const response = await fetch('/api/brevia/chat', {
     method: 'POST',
     headers: {
@@ -289,10 +277,8 @@ const submitExample = (question: string) => {
 }
 
 const loadPreviousMessages = async (id: any) => {
-  console.log("loading previous messages", collectionName);
   try {
     const data: any = await $fetch(`/api/brevia/chat_history?session_id=${id}&collection=${collectionName}`);
-    console.log(data);
     const loadedDialog: DialogItem[] = [];
     for (let i = data.data.length - 1; i >= 0; i--) {
       loadedDialog.push(formatDialogItem(userNick.value, data.data[i].question, data.data[i].user_evaluation, data.data[i].uuid));
@@ -313,19 +299,8 @@ const refreshChat = () => {
   messagesLeft.value = parseInt(config.public.maxMessages);
 }
 
-const openFeedback = (item: any, type: boolean) => {
-  feedback.value!.uuid = item.uuid;
-  feedback.value!.session = session.value || '';
-  feedback.value!.evaluation = type
-  feedbackModalOpen.value = true;
-}
+defineExpose({
+  refreshChat
+});
 
-const closeFeedback = (feedback_uuid: string, type: boolean | undefined) => {
-  dialog.value.forEach((item) => {
-    if(item.uuid === feedback_uuid ) {
-      item.evaluation = type;
-    }
-  });
-  feedbackModalOpen.value = false;
-}
 </script>
