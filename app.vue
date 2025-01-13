@@ -1,5 +1,6 @@
 <template>
-  <ChatZone :collection />
+  <Loader v-if="isBusy" />
+  <ChatZone v-else :collection />
 </template>
 
 <script lang="ts" setup>

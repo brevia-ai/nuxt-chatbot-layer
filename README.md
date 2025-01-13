@@ -1,45 +1,37 @@
-# Nuxt Layer Starter
-
-Create Nuxt extendable layer with this GitHub template.
+# Nuxt Chatbot Layer
+A functionality for Brevia Chatbots using Nuxt Layers
 
 ## Setup
 
 Make sure to install the dependencies:
 
 ```bash
-pnpm install
+npm install
 ```
 
-## Working on your layer
+## Usage
 
-Your layer is at the root of this repository, it is exactly like a regular Nuxt project, except you can publish it on NPM.
-
-The `.playground` directory should help you on trying your layer during development.
-
-Running `pnpm dev` will prepare and boot `.playground` directory, which imports your layer itself.
-
-## Distributing your layer
-
-Your Nuxt layer is shaped exactly the same as any other Nuxt project, except you can publish it on NPM.
-
-To do so, you only have to check if `files` in `package.json` are valid, then run:
-
-```bash
-npm publish --access public
-```
-
-Once done, your users will only have to run:
-
-```bash
-npm install --save your-layer
-```
-
-Then add the dependency to their `extends` in `nuxt.config`:
+Add the dependency to `extends` in `nuxt.config`:
 
 ```ts
 defineNuxtConfig({
-  extends: 'your-layer'
+  extends: [
+    ['github:brevia-ai/nuxt-chatbot-layer', { install: true }]
+  ],
 })
+```
+
+## Environment Variables
+
+You can customize the chatbot by setting environment variables in the `.env` file of **your app**:
+
+```ts
+## Chatbot settings
+NUXT_PUBLIC_MAX_MESSAGES=3
+NUXT_PUBLIC_START_MESSAGE='Questo è un messaggio iniziale di test!'
+NUXT_PUBLIC_EXAMPLE_QUESTIONS=["Cosa posso chiederti?"]
+## Uncomment to make actions menu visible on chatbot response
+# NUXT_PUBLIC_CHAT_ACTIONS = 'false'
 ```
 
 ## Development Server
@@ -47,7 +39,7 @@ defineNuxtConfig({
 Start the development server on http://localhost:3000
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ## Production
@@ -55,19 +47,6 @@ pnpm dev
 Build the application for production:
 
 ```bash
-pnpm build
+npm build
 ```
 
-Or statically generate it with:
-
-```bash
-pnpm generate
-```
-
-Locally preview production build:
-
-```bash
-pnpm preview
-```
-
-Checkout the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

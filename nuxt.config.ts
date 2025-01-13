@@ -13,9 +13,10 @@ export default defineNuxtConfig({
       maxMessages: '100',
       startMessage: '',
       exampleQuestions: [],
-    }
+      chatActions: 'true',
+    },
   },
-  devtools: { enabled: true },
+  devtools: { enabled: process.env?.DEVTOOLS === 'true' ? true : false },
   imports: {
     autoImport: true,
   },

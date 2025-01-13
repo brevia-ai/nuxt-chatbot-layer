@@ -28,9 +28,9 @@
             <div class="chat-balloon-status" :class="{ busy: isBusy && i === dialog.length - 1 }"></div>
           </div>
           <div class="break-words rich-text" v-html="formatResponse(item.message, responseFormat)"></div>
-          <!--MENU CONTESTUALE-->
+          <!--MENU DI AZIONI CHAT -->
           <div
-            v-if="!isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
+            v-if="chatActions && !isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
             class="context-window px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
           >
             <div class="px-1.5 pb-1" :class="(item.evaluation == null) ? 'context-icon' : ''">
@@ -99,6 +99,7 @@ const historyId = ref('');
 const canSeeDocs = ref(false);
 const session = useCookie('session');
 const messagesLeft = ref(parseInt(config.public.maxMessages));
+const chatActions = ref(config.public.chatActions);
 let docsJsonString = '';
 let responseEnded = false;
 let currIdx = 0;
