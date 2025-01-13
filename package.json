@@ -9,17 +9,24 @@
     "build": "nuxt build .playground",
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"{components,pages,plugins,middleware,layouts,composables,assets}/**/*.{js,ts,vue,css,scss,json,md}\"",
+    "format:check": "prettier --check \"{components,pages,plugins,middleware,layouts,composables,assets}/**/*.{js,ts,vue,css,scss,json,md}\""
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.6.5",
     "@nuxt/eslint": "latest",
-    "nuxt-icon": "^0.6.6",
-    "eslint": "^9.17.0",
+    "@nuxt/eslint-config": "^0.7.5",
+    "@nuxtjs/tailwindcss": "^6.6.5",
+    "axios": "^1.5.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.1",
     "nuxt": "^3.15.1",
+    "nuxt-icon": "^0.6.6",
+    "prettier": "^3.4.2",
     "typescript": "^5.7.2",
-    "vue-router": "latest",
     "vue": "latest",
-    "axios": "^1.5.0"
+    "vue-router": "latest"
   }
 }
