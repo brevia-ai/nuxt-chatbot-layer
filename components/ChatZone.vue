@@ -6,7 +6,7 @@
     </button>
   </slot>
   <div v-if="dialog.length">
-    <div class="pt-6 pb-4 space-y-3 h-[75vh] md:h-[85vh] px-4 sm:px-6 w-full overflow-y-auto" ref="dialogZone">
+    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-[75vh] md:h-[85vh] px-4 sm:px-6 w-full overflow-y-auto">
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
@@ -15,7 +15,7 @@
           :class="{
             'bg-pink-800 text-white': item.error,
             'chat-balloon-right': item.who == userNick,
-            'chat-balloon-left': item.who != userNick
+            'chat-balloon-left': item.who != userNick,
           }"
           @mouseover="
             showResponseMenu = true;
@@ -25,33 +25,38 @@
         >
           <div class="flex space-x-3 justify-between">
             <p class="text-base uppercase font-bold">{{ item.who }}</p>
-            <div class="chat-balloon-status" :class="{ busy: isBusy && i === dialog.length - 1 }"></div>
+            <div class="chat-balloon-status" :class="{ busy: isBusy && i === dialog.length - 1 }" />
           </div>
-          <div class="break-words rich-text" v-html="formatResponse(item.message, responseFormat)"></div>
+          <div class="break-words rich-text" v-html="formatResponse(item.message, responseFormat)" />
           <!--MENU DI AZIONI CHAT -->
           <div
             v-if="chatActions && !isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
             class="context-window px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
           >
-            <div class="px-1.5 pb-1" :class="(item.evaluation == null) ? 'context-icon' : ''">
+            <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'context-icon' : ''">
               <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-[--color-text-success]" />
               <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-[--color-text-error]" />
-              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="" />
+              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
             </div>
             <div v-if="item.evaluation == null" class="px-1.5 pb-1 context-icon">
-              <Icon name="ph:thumbs-down-fill" class="text-white" @click="" />
+              <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
             </div>
-            <slot name="extra-icons"></slot>
+            <slot name="extra-icons" />
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
-      <!-- SUGGESTED QUESTIONS -->
+    <!-- SUGGESTED QUESTIONS -->
     <div v-if="config.public.exampleQuestions.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
-      <button v-for="q in config.public.exampleQuestions" class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85" @click="submitExample(q)">
-          {{ q }}
+      <button
+        v-for="(q, i) in config.public.exampleQuestions"
+        :key="i"
+        class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85"
+        @click="submitExample(q)"
+      >
+        {{ q }}
       </button>
     </div>
     <div class="flex space-x-2">
@@ -59,7 +64,7 @@
         ref="input"
         v-model.trim="prompt"
         type="text"
-        class=" grow text-lg p-2 rounded border border-neutral-800 disabled:bg-neutral-100 disabled:border-neutral-300 shadow-md disabled:shadow-none"
+        class="grow text-lg p-2 rounded border border-neutral-800 disabled:bg-neutral-100 disabled:border-neutral-300 shadow-md disabled:shadow-none"
         :disabled="isBusy || messagesLeft == 0"
         @keydown.enter="submit"
       />
@@ -68,16 +73,21 @@
       </button>
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">
-
-const { $openModal } = useNuxtApp();
+// const { $openModal } = useNuxtApp();
 const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
-const props = defineProps(['isDemoChatbot', 'collection', 'isEmbedded']);
-const emit = defineEmits(['updateLeft']);
+const props = defineProps({
+  isDemoChatbot: Boolean,
+  collection: {
+    type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
+    default: () => ({ name: '', uuid: '', cmetadata: {} }),
+  },
+  isEmbedded: Boolean,
+});
+// const emit = defineEmits(['updateLeft']);
 
 interface DialogItem {
   who: string;
@@ -111,10 +121,10 @@ let collectionName = '';
 const responseFormat = ref('text');
 
 onBeforeMount(async () => {
-  if(config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
+  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
   collectionName = props.collection.name;
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
-  if(session.value){
+  if (session.value) {
     await loadPreviousMessages(session.value);
   } else {
     session.value = crypto.randomUUID();
@@ -123,8 +133,8 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
-  nextTick(() => dialogZone.value.scrollTo({top: dialogZone.value.scrollHeight ,behavior: "smooth"}));
-})
+  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+});
 
 watch(isBusy, (val) => {
   if (!val) {
@@ -134,14 +144,14 @@ watch(isBusy, (val) => {
   }
 });
 
-watch(messagesLeft, (newVal)=> {
-  if(newVal <= 0){
-    dialog.value.push(formatDialogItem(botName.value, "Hai esaurito il numero di messaggi per questa sessione",null, undefined, true));
+watch(messagesLeft, (newVal) => {
+  if (newVal <= 0) {
+    dialog.value.push(formatDialogItem(botName.value, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
   }
 });
 
 // methods
-const formatDialogItem = (who: string, message: string, evaluation:any, uuid = '', error = false): DialogItem => {
+const formatDialogItem = (who: string, message: string, evaluation: any, uuid = '', error = false): DialogItem => {
   return {
     who,
     message,
@@ -155,7 +165,7 @@ const submit = async () => {
   if (!prompt.value) return;
 
   isBusy.value = true;
-  nextTick(() => dialogZone.value.scrollTo({top: dialogZone.value.scrollHeight ,behavior: "smooth"}));
+  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
   dialog.value.push(formatDialogItem(userNick.value, prompt.value, null));
   dialog.value.push(formatDialogItem(botName.value, '', null));
   currIdx = dialog.value.length - 1;
@@ -235,7 +245,7 @@ const handleStreamText = (text: string) => {
     }
   } else {
     dialog.value[currIdx].message += text;
-    nextTick(() => dialogZone.value.scrollTo({top: dialogZone.value.scrollHeight ,behavior: "smooth"}));
+    nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
   }
 };
 
@@ -270,12 +280,12 @@ const showErrorInDialog = (index: number) => {
 };
 
 const submitExample = (question: string) => {
-  if(messagesLeft.value <= 0){
+  if (messagesLeft.value <= 0) {
     return;
   }
   prompt.value = question;
   submit();
-}
+};
 
 const loadPreviousMessages = async (id: any) => {
   try {
@@ -286,7 +296,7 @@ const loadPreviousMessages = async (id: any) => {
       loadedDialog.push(formatDialogItem(botName.value, data.data[i].answer, data.data[i].user_evaluation, data.data[i].uuid));
     }
     dialog.value.push(...loadedDialog);
-    let mUsed = dialog.value.filter((el) => el.who == userNick.value ).length;
+    const mUsed = dialog.value.filter((el) => el.who == userNick.value).length;
     messagesLeft.value = parseInt(config.public.maxMessages) - mUsed;
   } catch (error) {
     console.error(error);
@@ -296,12 +306,16 @@ const loadPreviousMessages = async (id: any) => {
 const refreshChat = () => {
   session.value = crypto.randomUUID();
   dialog.value = [];
-  if(config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
+  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
   messagesLeft.value = parseInt(config.public.maxMessages);
-}
+};
 
 defineExpose({
-  refreshChat
+  refreshChat,
 });
 
+const openFeedback = (item: any, evaluation: boolean) => {
+  // TBD - remove console.log
+  console.log(item, evaluation);
+};
 </script>

@@ -20,8 +20,5 @@ export default defineNuxtConfig({
   imports: {
     autoImport: true,
   },
-  modules: [
-    '@nuxtjs/tailwindcss',
-    'nuxt-icon'
-  ],
-})
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', 'nuxt-icon'],
+});
