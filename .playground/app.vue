@@ -1,7 +1,15 @@
 <template>
   <div class="flex flex-col h-[100vh]">
     <ElementLoader v-if="isBusy" :loader-dim="56" class="mx-auto my-auto" />
-    <ChatZone v-else ref="chatZone" :collection="collection" :start-message="startMessage()" :example-questions="exampleQuestions()">
+    <ChatZone
+      v-else
+      ref="chatZone"
+      :collection="collection"
+      :start-message="startMessage()"
+      :example-questions="exampleQuestions()"
+      :user-nick="userNick()"
+      :bot-name="botName()"
+    >
       <div class="w-full">
         <div class="flex items-center justify-between space-x-1 sm:space-x-1">
           <button class="text-white" @click="chatZone.refreshChat()">
@@ -39,5 +47,13 @@ const startMessage = () => {
 
 const exampleQuestions = () => {
   return [`What is ${title} about?`, `What are the topics covered in ${title}?`];
+};
+
+const userNick = () => {
+  return 'User';
+};
+
+const botName = () => {
+  return 'Brevia';
 };
 </script>

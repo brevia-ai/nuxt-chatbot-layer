@@ -84,6 +84,8 @@ const props = defineProps({
   exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
   maxMessages: { type: Number, default: 0 },
   chatActions: { type: Boolean, default: true },
+  userNick: { type: String, default: 'YOU' },
+  botName: { type: String, default: 'ASSISTANT' },
 });
 
 interface DialogItem {
@@ -99,8 +101,6 @@ const isBusy = ref(false);
 const prompt = ref('');
 const input = ref<HTMLElement | null>(null);
 const dialog = ref<DialogItem[]>([]);
-const userNick = ref('TU');
-const botName = ref('Assistenza');
 const docs = ref<any>([]);
 const historyId = ref('');
 const canSeeDocs = ref(false);
@@ -118,7 +118,7 @@ const responseFormat = ref('text');
 
 onBeforeMount(async () => {
   if (props.startMessage) {
-    dialog.value.push(formatDialogItem(botName.value, props.startMessage, null, ''));
+    dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
   }
   collectionName = props.collection.name;
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
@@ -144,7 +144,7 @@ watch(isBusy, (val) => {
 
 watch(messagesLeft, (newVal) => {
   if (newVal <= 0) {
-    dialog.value.push(formatDialogItem(botName.value, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
+    dialog.value.push(formatDialogItem(props.botName, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
   }
 });
 
@@ -164,8 +164,8 @@ const submit = async () => {
 
   isBusy.value = true;
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
-  dialog.value.push(formatDialogItem(userNick.value, prompt.value, null));
-  dialog.value.push(formatDialogItem(botName.value, '', null));
+  dialog.value.push(formatDialogItem(props.userNick, prompt.value, null));
+  dialog.value.push(formatDialogItem(props.botName, '', null));
   currIdx = dialog.value.length - 1;
 
   try {
@@ -269,7 +269,7 @@ const parseDocsJson = () => {
 };
 
 const showErrorInDialog = (index: number) => {
-  const dialogItem = formatDialogItem(botName.value, 'Qualcosa è andato storto', true);
+  const dialogItem = formatDialogItem(props.botName, 'Qualcosa è andato storto', true);
 
   if (index) {
     dialog.value[index] = dialogItem;
@@ -292,11 +292,11 @@ const loadPreviousMessages = async (id: any) => {
     const data: any = await $fetch(`/api/brevia/chat_history?session_id=${id}&collection=${collectionName}`);
     const loadedDialog: DialogItem[] = [];
     for (let i = data.data.length - 1; i >= 0; i--) {
-      loadedDialog.push(formatDialogItem(userNick.value, data.data[i].question, data.data[i].user_evaluation, data.data[i].uuid));
-      loadedDialog.push(formatDialogItem(botName.value, data.data[i].answer, data.data[i].user_evaluation, data.data[i].uuid));
+      loadedDialog.push(formatDialogItem(props.userNick, data.data[i].question, data.data[i].user_evaluation, data.data[i].uuid));
+      loadedDialog.push(formatDialogItem(props.botName, data.data[i].answer, data.data[i].user_evaluation, data.data[i].uuid));
     }
     dialog.value.push(...loadedDialog);
-    const mUsed = dialog.value.filter((el) => el.who == userNick.value).length;
+    const mUsed = dialog.value.filter((el) => el.who == props.userNick).length;
     if (props.maxMessages) {
       messagesLeft.value = props.maxMessages - mUsed;
     }
@@ -309,7 +309,7 @@ const refreshChat = () => {
   session.value = crypto.randomUUID();
   dialog.value = [];
   if (props.startMessage) {
-    dialog.value.push(formatDialogItem(botName.value, props.startMessage, null, ''));
+    dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
   }
   if (props.maxMessages) {
     messagesLeft.value = props.maxMessages;
