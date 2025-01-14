@@ -8,13 +8,6 @@ export default defineNuxtConfig({
       name: '',
       secret: '',
     },
-    //chatbot configuration
-    public: {
-      maxMessages: '100',
-      startMessage: '',
-      exampleQuestions: [],
-      chatActions: 'true',
-    },
   },
   devtools: { enabled: process.env?.DEVTOOLS === 'true' ? true : false },
   imports: {

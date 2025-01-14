@@ -5,7 +5,7 @@
       <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
     </button>
   </slot>
-  <div v-if="dialog.length">
+  <div v-if="dialog">
     <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-[75vh] md:h-[85vh] px-4 sm:px-6 w-full overflow-y-auto">
       <div class="flex flex-col space-y-6 pb-4">
         <div
@@ -49,9 +49,9 @@
   </div>
   <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
-    <div v-if="config.public.exampleQuestions.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
+    <div v-if="exampleQuestions?.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
       <button
-        v-for="(q, i) in config.public.exampleQuestions"
+        v-for="(q, i) in exampleQuestions"
         :key="i"
         class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85"
         @click="submitExample(q)"
@@ -76,18 +76,20 @@
 </template>
 
 <script setup lang="ts">
-// const { $openModal } = useNuxtApp();
-const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
+
 const props = defineProps({
-  isDemoChatbot: Boolean,
   collection: {
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isEmbedded: Boolean,
+  isDemoChatbot: {type: Boolean, default: false},
+  isEmbedded: {type: Boolean, default: false},
+  startMessage: {type: String, default: ''},
+  exampleQuestions: {type: Array as PropType<string[]>, default: () => []},
+  maxMessages: {type: Number, default: 0},
+  chatActions: {type: Boolean, default: true},
 });
-// const emit = defineEmits(['updateLeft']);
 
 interface DialogItem {
   who: string;
@@ -108,8 +110,7 @@ const docs = ref<any>([]);
 const historyId = ref('');
 const canSeeDocs = ref(false);
 const session = useCookie('session');
-const messagesLeft = ref(parseInt(config.public.maxMessages));
-const chatActions = ref(config.public.chatActions);
+const messagesLeft = ref(props.maxMessages || 100);
 let docsJsonString = '';
 let responseEnded = false;
 let currIdx = 0;
@@ -121,7 +122,9 @@ let collectionName = '';
 const responseFormat = ref('text');
 
 onBeforeMount(async () => {
-  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
+  if (props.startMessage) {
+    dialog.value.push(formatDialogItem(botName.value, props.startMessage, null, ''));
+  }
   collectionName = props.collection.name;
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
   if (session.value) {
@@ -172,7 +175,9 @@ const submit = async () => {
 
   try {
     await streamingFetchRequest();
-    messagesLeft.value = messagesLeft.value - 1;
+    if (props.maxMessages) {
+      messagesLeft.value = messagesLeft.value - 1;
+    }
     isBusy.value = false;
   } catch (error) {
     isBusy.value = false;
@@ -297,7 +302,9 @@ const loadPreviousMessages = async (id: any) => {
     }
     dialog.value.push(...loadedDialog);
     const mUsed = dialog.value.filter((el) => el.who == userNick.value).length;
-    messagesLeft.value = parseInt(config.public.maxMessages) - mUsed;
+    if (props.maxMessages) {
+      messagesLeft.value = props.maxMessages - mUsed;
+    }
   } catch (error) {
     console.error(error);
   }
@@ -306,8 +313,12 @@ const loadPreviousMessages = async (id: any) => {
 const refreshChat = () => {
   session.value = crypto.randomUUID();
   dialog.value = [];
-  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
-  messagesLeft.value = parseInt(config.public.maxMessages);
+  if (props.startMessage) {
+    dialog.value.push(formatDialogItem(botName.value, props.startMessage, null, ''));
+  }
+  if (props.maxMessages) {
+    messagesLeft.value = props.maxMessages;
+  }
 };
 
 defineExpose({
