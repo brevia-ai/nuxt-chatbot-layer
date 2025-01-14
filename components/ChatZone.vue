@@ -5,7 +5,7 @@
       <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
     </button>
   </slot>
-  <div v-if="dialog.length">
+  <div v-if="dialog">
     <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-[75vh] md:h-[85vh] px-4 sm:px-6 w-full overflow-y-auto">
       <div class="flex flex-col space-y-6 pb-4">
         <div
@@ -49,13 +49,8 @@
   </div>
   <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
-    <div v-if="config.public.exampleQuestions.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
-      <button
-        v-for="(q, i) in config.public.exampleQuestions"
-        :key="i"
-        class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85"
-        @click="submitExample(q)"
-      >
+    <div v-if="exampleQuestions?.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
+      <button v-for="(q, i) in exampleQuestions" :key="i" class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85" @click="submitExample(q)">
         {{ q }}
       </button>
     </div>
@@ -76,18 +71,22 @@
 </template>
 
 <script setup lang="ts">
-// const { $openModal } = useNuxtApp();
-const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
+
 const props = defineProps({
-  isDemoChatbot: Boolean,
   collection: {
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isEmbedded: Boolean,
+  isDemoChatbot: { type: Boolean, default: false },
+  isEmbedded: { type: Boolean, default: false },
+  startMessage: { type: String, default: '' },
+  exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
+  maxMessages: { type: Number, default: 0 },
+  chatActions: { type: Boolean, default: true },
+  userNick: { type: String, default: 'YOU' },
+  botName: { type: String, default: 'ASSISTANT' },
 });
-// const emit = defineEmits(['updateLeft']);
 
 interface DialogItem {
   who: string;
@@ -102,14 +101,11 @@ const isBusy = ref(false);
 const prompt = ref('');
 const input = ref<HTMLElement | null>(null);
 const dialog = ref<DialogItem[]>([]);
-const userNick = ref('TU');
-const botName = ref('Assistenza');
 const docs = ref<any>([]);
 const historyId = ref('');
 const canSeeDocs = ref(false);
 const session = useCookie('session');
-const messagesLeft = ref(parseInt(config.public.maxMessages));
-const chatActions = ref(config.public.chatActions);
+const messagesLeft = ref(props.maxMessages || 100);
 let docsJsonString = '';
 let responseEnded = false;
 let currIdx = 0;
@@ -121,7 +117,9 @@ let collectionName = '';
 const responseFormat = ref('text');
 
 onBeforeMount(async () => {
-  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
+  if (props.startMessage) {
+    dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
+  }
   collectionName = props.collection.name;
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
   if (session.value) {
@@ -146,7 +144,7 @@ watch(isBusy, (val) => {
 
 watch(messagesLeft, (newVal) => {
   if (newVal <= 0) {
-    dialog.value.push(formatDialogItem(botName.value, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
+    dialog.value.push(formatDialogItem(props.botName, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
   }
 });
 
@@ -166,13 +164,15 @@ const submit = async () => {
 
   isBusy.value = true;
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
-  dialog.value.push(formatDialogItem(userNick.value, prompt.value, null));
-  dialog.value.push(formatDialogItem(botName.value, '', null));
+  dialog.value.push(formatDialogItem(props.userNick, prompt.value, null));
+  dialog.value.push(formatDialogItem(props.botName, '', null));
   currIdx = dialog.value.length - 1;
 
   try {
     await streamingFetchRequest();
-    messagesLeft.value = messagesLeft.value - 1;
+    if (props.maxMessages) {
+      messagesLeft.value = messagesLeft.value - 1;
+    }
     isBusy.value = false;
   } catch (error) {
     isBusy.value = false;
@@ -269,7 +269,7 @@ const parseDocsJson = () => {
 };
 
 const showErrorInDialog = (index: number) => {
-  const dialogItem = formatDialogItem(botName.value, 'Qualcosa è andato storto', true);
+  const dialogItem = formatDialogItem(props.botName, 'Qualcosa è andato storto', true);
 
   if (index) {
     dialog.value[index] = dialogItem;
@@ -292,12 +292,14 @@ const loadPreviousMessages = async (id: any) => {
     const data: any = await $fetch(`/api/brevia/chat_history?session_id=${id}&collection=${collectionName}`);
     const loadedDialog: DialogItem[] = [];
     for (let i = data.data.length - 1; i >= 0; i--) {
-      loadedDialog.push(formatDialogItem(userNick.value, data.data[i].question, data.data[i].user_evaluation, data.data[i].uuid));
-      loadedDialog.push(formatDialogItem(botName.value, data.data[i].answer, data.data[i].user_evaluation, data.data[i].uuid));
+      loadedDialog.push(formatDialogItem(props.userNick, data.data[i].question, data.data[i].user_evaluation, data.data[i].uuid));
+      loadedDialog.push(formatDialogItem(props.botName, data.data[i].answer, data.data[i].user_evaluation, data.data[i].uuid));
     }
     dialog.value.push(...loadedDialog);
-    const mUsed = dialog.value.filter((el) => el.who == userNick.value).length;
-    messagesLeft.value = parseInt(config.public.maxMessages) - mUsed;
+    const mUsed = dialog.value.filter((el) => el.who == props.userNick).length;
+    if (props.maxMessages) {
+      messagesLeft.value = props.maxMessages - mUsed;
+    }
   } catch (error) {
     console.error(error);
   }
@@ -306,8 +308,12 @@ const loadPreviousMessages = async (id: any) => {
 const refreshChat = () => {
   session.value = crypto.randomUUID();
   dialog.value = [];
-  if (config.public.startMessage) dialog.value.push(formatDialogItem(botName.value, config.public.startMessage, null, ''));
-  messagesLeft.value = parseInt(config.public.maxMessages);
+  if (props.startMessage) {
+    dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
+  }
+  if (props.maxMessages) {
+    messagesLeft.value = props.maxMessages;
+  }
 };
 
 defineExpose({
