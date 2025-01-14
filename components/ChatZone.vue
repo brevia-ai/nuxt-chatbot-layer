@@ -50,12 +50,7 @@
   <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
-      <button
-        v-for="(q, i) in exampleQuestions"
-        :key="i"
-        class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85"
-        @click="submitExample(q)"
-      >
+      <button v-for="(q, i) in exampleQuestions" :key="i" class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85" @click="submitExample(q)">
         {{ q }}
       </button>
     </div>
@@ -83,12 +78,12 @@ const props = defineProps({
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isDemoChatbot: {type: Boolean, default: false},
-  isEmbedded: {type: Boolean, default: false},
-  startMessage: {type: String, default: ''},
-  exampleQuestions: {type: Array as PropType<string[]>, default: () => []},
-  maxMessages: {type: Number, default: 0},
-  chatActions: {type: Boolean, default: true},
+  isDemoChatbot: { type: Boolean, default: false },
+  isEmbedded: { type: Boolean, default: false },
+  startMessage: { type: String, default: '' },
+  exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
+  maxMessages: { type: Number, default: 0 },
+  chatActions: { type: Boolean, default: true },
 });
 
 interface DialogItem {
