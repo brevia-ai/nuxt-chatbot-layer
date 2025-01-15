@@ -57,7 +57,8 @@
         :key="i"
         class="button bg-primary text-white whitespace-nowrap rounded-md p-2 hover:opacity-90 disabled:cursor-wait"
         :disabled="isBusy || messagesLeft == 0"
-        @click="submitExample(q)">
+        @click="submitExample(q)"
+      >
         {{ q }}
       </button>
     </div>
@@ -141,15 +142,10 @@ onBeforeMount(async () => {
 
 onMounted(() => {
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
-  if(headerSlot) {
+  if (headerSlot) {
     headerHeight.value = headerSlot.value.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--header-height', `${headerHeight.value}px`);
   }
-});
-
-const dynamicHeight = computed(() => {
-
-  return `h-[calc(75vh-${headerHeight.value}px)]`;
 });
 
 watch(isBusy, (val) => {

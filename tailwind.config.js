@@ -12,6 +12,6 @@ module.exports = {
         dynamic: 'calc(80vh - var(--header-height))',
         'dynamic-sm': 'calc(85vh - var(--header-height))',
       },
-    }
-  }
-}
+    },
+  },
+};
