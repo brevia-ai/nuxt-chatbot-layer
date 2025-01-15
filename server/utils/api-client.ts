@@ -2,14 +2,14 @@ import type { AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
 import type { H3Event } from 'h3';
 
-export const authorizationHeaders = () => {
+export const authorizationHeaders = (event: H3Event) => {
   return {
-    Authorization: `Bearer ` + useRuntimeConfig().apiSecret,
+    Authorization: `Bearer ` + useRuntimeConfig(event).apiSecret,
   };
 };
 
-export const apiHeaders = (json_content = false, custom = {}) => {
-  const authHeader = authorizationHeaders();
+export const apiHeaders = (json_content = false, custom = {}, event: H3Event) => {
+  const authHeader = authorizationHeaders(event);
   if (json_content) {
     return { ...authHeader, ...custom, ...{ 'Content-Type': 'application/json' } };
   }
@@ -17,8 +17,8 @@ export const apiHeaders = (json_content = false, custom = {}) => {
   return { ...authHeader, ...custom };
 };
 
-export const apiUrl = (path = '') => {
-  const config = useRuntimeConfig();
+export const apiUrl = (path = '', event: H3Event) => {
+  const config = useRuntimeConfig(event);
   return `${config.apiBaseUrl}${path}`;
 };
 

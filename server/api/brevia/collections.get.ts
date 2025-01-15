@@ -5,10 +5,10 @@ export default defineEventHandler(async (event) => {
     url += `/${query.uuid}`;
     delete query.uuid;
   }
-  console.log(apiUrl(url));
+  console.log(apiUrl(url, event));
   try {
-    const response: any = await $fetch(apiUrl(url), {
-      headers: authorizationHeaders(),
+    const response: any = await $fetch(apiUrl(url, event), {
+      headers: authorizationHeaders(event),
       query,
     });
 

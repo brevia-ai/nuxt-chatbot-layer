@@ -1,6 +1,5 @@
-const config = useRuntimeConfig();
-
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event);
   const url = config.apiBaseUrl + `/chat_history`;
   const query = getQuery(event);
 

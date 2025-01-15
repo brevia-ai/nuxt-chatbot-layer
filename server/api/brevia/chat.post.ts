@@ -1,5 +1,3 @@
-const config = useRuntimeConfig();
-
 function readChunks(reader) {
   return {
     async *[Symbol.asyncIterator]() {
@@ -13,6 +11,7 @@ function readChunks(reader) {
 }
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event);
   const url = config.apiBaseUrl + '/chat';
   const body = await readBody(event);
   const sessionId = getRequestHeader(event, 'X-Chat-Session') || '';
