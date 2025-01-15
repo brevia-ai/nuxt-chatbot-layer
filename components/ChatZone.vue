@@ -1,19 +1,21 @@
 <template>
-  <slot name="chatbot-header">
-    <!--Fallback-->
-    <button class="absolute button bg-sky-800 text-white rounded-md p-2 hover:opacity-85 right-2 top-2" @click="refreshChat">
-      <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
-    </button>
-  </slot>
+  <div ref="headerSlot">
+    <slot name="chatbot-header">
+      <!--Fallback-->
+      <button class="absolute z-50 bg-primary text-white rounded-md p-2 hover:border-white border-2 border-transparent right-2 top-2" @click="refreshChat">
+        <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
+      </button>
+    </slot>
+  </div>
   <div v-if="dialog">
-    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-[75vh] md:h-[85vh] px-4 sm:px-6 w-full overflow-y-auto">
+    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-dynamic sm:h-dynamic-sm px-4 sm:px-6 w-full overflow-y-auto">
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
           :key="i"
           class="chat-balloon space-y-2"
           :class="{
-            'bg-pink-800 text-white': item.error,
+            'bg-danger text-white': item.error,
             'chat-balloon-right': item.who == userNick,
             'chat-balloon-left': item.who != userNick,
           }"
@@ -31,14 +33,14 @@
           <!--MENU DI AZIONI CHAT -->
           <div
             v-if="chatActions && !isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
-            class="context-window px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
+            class="bg-neutral-600 px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
           >
-            <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'context-icon' : ''">
+            <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'hover:bg-neutral-500 hover:rounded-md cursor-pointer' : ''">
               <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-[--color-text-success]" />
               <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-[--color-text-error]" />
               <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
             </div>
-            <div v-if="item.evaluation == null" class="px-1.5 pb-1 context-icon">
+            <div v-if="item.evaluation == null" class="px-1.5 pb-1 hover:bg-neutral-500 hover:rounded-md cursor-pointer">
               <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
             </div>
             <slot name="extra-icons" />
@@ -47,10 +49,16 @@
       </div>
     </div>
   </div>
-  <div class="space-y-2 bottom-3 left-0 absolute px-4 pt-2 grow w-full bg-transparent overflow-hidden">
+  <div class="space-y-2 bottom-3 left-0 absolute px-4 grow w-full bg-transparent overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
-    <div v-if="exampleQuestions?.length != 0" class="flex flex-row gap-x-2 justify-start overflow-x-auto">
-      <button v-for="(q, i) in exampleQuestions" :key="i" class="button bg-sky-800 text-white rounded-md p-2 hover:opacity-85" @click="submitExample(q)">
+    <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
+      <button
+        v-for="(q, i) in exampleQuestions"
+        :key="i"
+        class="button bg-primary text-white whitespace-nowrap rounded-md p-2 hover:opacity-90 disabled:cursor-wait"
+        :disabled="isBusy || messagesLeft == 0"
+        @click="submitExample(q)"
+      >
         {{ q }}
       </button>
     </div>
@@ -63,7 +71,7 @@
         :disabled="isBusy || messagesLeft == 0"
         @keydown.enter="submit"
       />
-      <button class="button bg-sky-800 text-white rounded-md px-4 py-2 hover:opacity-85" :disabled="isBusy || messagesLeft == 0" @click="submit">
+      <button class="bg-primary text-white rounded-md px-4 py-2 hover:opacity-85 disabled:cursor-wait" :disabled="isBusy || messagesLeft == 0" @click="submit">
         <Icon name="ph:paper-plane-right-fill" class="text-xl" />
       </button>
     </div>
@@ -96,6 +104,7 @@ interface DialogItem {
   error: boolean;
 }
 
+const headerSlot = ref();
 const dialogZone = ref();
 const isBusy = ref(false);
 const prompt = ref('');
@@ -120,7 +129,7 @@ onBeforeMount(async () => {
   if (props.startMessage) {
     dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
   }
-  collectionName = props.collection.name;
+  collectionName = props.collection.name || '';
   responseFormat.value = llmResponseFormat(props.collection.cmetadata?.qa_completion_llm);
   if (session.value) {
     await loadPreviousMessages(session.value);
@@ -131,7 +140,12 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
+  let headerHeight = 0;
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+  if (headerSlot.value) {
+    headerHeight = headerSlot.value.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+  }
 });
 
 watch(isBusy, (val) => {
