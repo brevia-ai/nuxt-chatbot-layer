@@ -142,7 +142,7 @@ onBeforeMount(async () => {
 
 onMounted(() => {
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
-  if (headerSlot) {
+  if (headerSlot.value) {
     headerHeight.value = headerSlot.value.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--header-height', `${headerHeight.value}px`);
   }
