@@ -105,7 +105,6 @@ interface DialogItem {
 }
 
 const headerSlot = ref();
-const headerHeight = ref(0);
 const dialogZone = ref();
 const isBusy = ref(false);
 const prompt = ref('');
@@ -141,10 +140,11 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
+  let headerHeight = 0;
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
   if (headerSlot.value) {
-    headerHeight.value = headerSlot.value.getBoundingClientRect().height;
-    document.documentElement.style.setProperty('--header-height', `${headerHeight.value}px`);
+    headerHeight = headerSlot.value.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
   }
 });
 
