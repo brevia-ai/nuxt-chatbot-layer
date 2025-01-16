@@ -8,7 +8,7 @@
     </slot>
   </div>
   <div v-if="dialog">
-    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-dynamic sm:h-dynamic-sm px-4 sm:px-6 w-full overflow-y-auto">
+    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-dynamic px-4 sm:px-6 w-full overflow-y-auto">
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
