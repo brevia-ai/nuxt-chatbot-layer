@@ -9,7 +9,7 @@ module.exports = {
         danger: colors.pink[900],
       },
       height: {
-        dynamic: 'calc(95vh - var(--header-height) - 100px)',
+        dynamic: 'calc(100dvh - var(--header-height) - var(--input-height))',
       },
     },
   },
