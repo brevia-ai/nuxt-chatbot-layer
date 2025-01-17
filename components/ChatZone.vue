@@ -2,13 +2,13 @@
   <div ref="headerSlot">
     <slot name="chatbot-header">
       <!--Fallback-->
-      <button class="absolute z-50 bg-primary text-white rounded-md p-2 hover:border-white border-2 border-transparent right-2 top-2" @click="refreshChat">
+      <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 border-transparent right-2 top-2" @click="refreshChat">
         <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
       </button>
     </slot>
   </div>
   <div v-if="dialog">
-    <div ref="dialogZone" class="pt-6 pb-4 space-y-3 h-dynamic px-4 sm:px-6 w-full overflow-y-auto">
+    <div ref="dialogZone" class="fixed top-[var(--header-height)] h-dynamic w-full py-2 px-4 sm:px-6 overflow-auto scroll-smooth">
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
@@ -49,7 +49,7 @@
       </div>
     </div>
   </div>
-  <div class="space-y-2 bottom-3 left-0 absolute px-4 grow w-full bg-transparent overflow-hidden">
+  <div ref="inputZone" class="fixed left-0 right-0 bottom-0 space-y-2 px-4 py-4 w-full bg-white overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
       <button
@@ -105,6 +105,7 @@ interface DialogItem {
 }
 
 const headerSlot = ref();
+const inputZone = ref();
 const dialogZone = ref();
 const isBusy = ref(false);
 const prompt = ref('');
@@ -141,10 +142,15 @@ onBeforeMount(async () => {
 
 onMounted(() => {
   let headerHeight = 0;
+  let inputHeight = 0;
   nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
   if (headerSlot.value) {
     headerHeight = headerSlot.value.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+  }
+  if (inputZone.value) {
+    inputHeight = inputZone.value.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--input-height', `${inputHeight}px`);
   }
 });
 
