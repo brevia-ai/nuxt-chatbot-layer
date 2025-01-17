@@ -2,7 +2,7 @@
   <div ref="headerSlot">
     <slot name="chatbot-header">
       <!--Fallback-->
-      <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 border-transparent right-2 top-2" @click="refreshChat">
+      <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 right-2 top-2" @click="refreshChat">
         <Icon name="ph:arrow-counter-clockwise-bold" class="text-white hover:transform hover:-rotate-180 duration-300" height="25" width="25" />
       </button>
     </slot>
@@ -49,7 +49,7 @@
       </div>
     </div>
   </div>
-  <div ref="inputZone" class="fixed left-0 right-0 bottom-0 space-y-2 px-4 py-4 w-full bg-white overflow-hidden">
+  <div ref="inputZone" class="fixed left-0 right-0 bottom-0 space-y-2 p-4 w-full bg-white overflow-hidden">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
       <button
