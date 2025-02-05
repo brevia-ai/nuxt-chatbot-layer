@@ -112,7 +112,6 @@ const prompt = ref('');
 const input = ref<HTMLElement | null>(null);
 const dialog = ref<DialogItem[]>([]);
 const docs = ref<any>([]);
-const historyId = ref('');
 const canSeeDocs = ref(false);
 const session = useCookie('session');
 const messagesLeft = ref(props.maxMessages || 100);
@@ -205,7 +204,6 @@ const streamingFetchRequest = async () => {
   const question = prompt.value;
   prompt.value = '';
   docs.value = [];
-  historyId.value = '';
   docsJsonString = '';
   responseEnded = false;
   canSeeDocs.value = false;
@@ -279,7 +277,7 @@ const parseDocsJson = () => {
     const parsed = JSON.parse(docsJsonString);
     if (parsed?.[0]?.chat_history_id) {
       const item = parsed?.shift() || {};
-      historyId.value = item?.chat_history_id || '';
+      dialog.value[currIdx].uuid = item?.chat_history_id || '';
     }
     docs.value = parsed;
     canSeeDocs.value = true;
