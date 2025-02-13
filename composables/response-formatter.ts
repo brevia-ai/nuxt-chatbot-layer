@@ -30,31 +30,30 @@ export const useResponseFormat = () => {
     const linkRegex = /\[(.*?)\]\((.*?)\)/g;
 
     const lines = textToFormat.split('\n');
-    let fortmattedLines;
-    fortmattedLines = lines.map((line) => {
+    let formattedLines;
+    formattedLines = lines.map((line) => {
       return line.replace(boldRegex, (_, boldType1, boldType2) => {
         const boldText = boldType1 || boldType2;
         return `<strong>${boldText}</strong>`;
       });
     });
-    fortmattedLines = fortmattedLines.map((line) => {
+    formattedLines = formattedLines.map((line) => {
       return line.replace(titleRegex, (_, hashes, titleText) => {
         const titleLevel = hashes.length;
         return `<h${titleLevel}>${titleText}</h${titleLevel}>`;
       });
     });
-    fortmattedLines = fortmattedLines.map((line) => {
+    formattedLines = formattedLines.map((line) => {
       return line.replace(codeRegex, (_, code) => {
         return `<code>${code}</code>`;
       });
     });
-    fortmattedLines = fortmattedLines.map((line) => {
+    formattedLines = formattedLines.map((line) => {
       return line.replace(linkRegex, (_, url, link) => {
-        console.log(url, link);
         return `<a href="${url}" target="_blank" rel="noopener">${link}</a>`;
       });
     });
-    return fortmattedLines.join('<br />');
+    return formattedLines.join('<br />');
   };
 
   return {
