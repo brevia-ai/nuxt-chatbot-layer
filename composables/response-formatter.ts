@@ -26,6 +26,9 @@ export const useResponseFormat = () => {
     //Regex for code (`...`)
     const codeRegex = /`([^`]*)`/g;
 
+    //Regex for Links
+    const linkRegex = /\[(.*?)\]\((.*?)\)/g;
+
     const lines = textToFormat.split('\n');
     let fortmattedLines;
     fortmattedLines = lines.map((line) => {
@@ -45,6 +48,12 @@ export const useResponseFormat = () => {
         return `<code>${code}</code>`;
       });
     });
+    fortmattedLines = fortmattedLines.map((line) => {
+      return line.replace(linkRegex, (_, url, link) => {
+        console.log(url, link);
+        return `<a href="${url}" class="text-cyan-400 underline">${link}</a>`;
+      })
+    })
     return fortmattedLines.join('<br />');
   };
 
