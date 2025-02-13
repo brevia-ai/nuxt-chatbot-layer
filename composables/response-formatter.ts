@@ -52,8 +52,8 @@ export const useResponseFormat = () => {
       return line.replace(linkRegex, (_, url, link) => {
         console.log(url, link);
         return `<a href="${url}" class="text-cyan-400 underline">${link}</a>`;
-      })
-    })
+      });
+    });
     return fortmattedLines.join('<br />');
   };
 
