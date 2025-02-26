@@ -3,46 +3,50 @@ const openBubbleHtml = `<svg xmlns="http://www.w3.org/2000/svg" width="32" heigh
 const defaultSrc = '/chatbot';
 
 const buttonStyle = {
-  position: "fixed",
-  right: "30px",
-  bottom: "30px",
-  padding: "15px",
-  borderRadius: "100%",
-  cursor: "pointer",
-  background: "#0369a1",
-  boxShadow: "rgba(0,0,0,0.5) 2px 8px 5px 0px",
-  color: "#FFFFFF",
+  position: 'fixed',
+  right: '30px',
+  bottom: '30px',
+  padding: '15px',
+  borderRadius: '100%',
+  cursor: 'pointer',
+  background: '#0369a1',
+  boxShadow: 'rgba(0,0,0,0.5) 2px 8px 5px 0px',
+  color: '#FFFFFF',
 };
 
 const iframeStyle = {
-  position: "fixed",
-  bottom: "100px",
-  right: "20px",
-  width: "413px",
-  height: "680px",
-  border: "1px solid #ccc",
-  borderRadius: "10px",
-  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-  display: "none",
+  position: 'fixed',
+  bottom: '100px',
+  right: '20px',
+  width: '413px',
+  height: '680px',
+  border: '1px solid #ccc',
+  borderRadius: '10px',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+  display: 'none',
 };
 
 let openChat = false;
 
-export function initBubble({iframeSrc = defaultSrc, buttonHtml = defaultBubbleHtml, openHtml = openBubbleHtml} = {}) {
-  const button = document.createElement("button");
-  button.innerHTML = buttonHtml
-  Object.assign(button.style, buttonStyle );
+export function initBubble({
+  iframeSrc = defaultSrc,
+  buttonHtml = defaultBubbleHtml,
+  openHtml = openBubbleHtml,
+} = {}) {
+  const button = document.createElement('button');
+  button.innerHTML = buttonHtml;
+  Object.assign(button.style, buttonStyle);
   document.body.appendChild(button);
 
-  const iframe = document.createElement("iframe");
+  const iframe = document.createElement('iframe');
   iframe.src = iframeSrc;
   Object.assign(iframe.style, iframeStyle);
   document.body.appendChild(iframe);
 
-  button.addEventListener("click", function() {
-      openChat = !openChat;
-      console.log(openChat);
-      iframe.style.display = iframe.style.display === "none" ? "block" : "none";
-      button.innerHTML = (!openChat) ? buttonHtml : openHtml;
+  button.addEventListener('click', function () {
+    openChat = !openChat;
+    console.log(openChat);
+    iframe.style.display = iframe.style.display === 'none' ? 'block' : 'none';
+    button.innerHTML = !openChat ? buttonHtml : openHtml;
   });
 }
