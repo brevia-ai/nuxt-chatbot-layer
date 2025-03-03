@@ -1,5 +1,5 @@
 <template>
-  <div ref="headerSlot">
+  <div v-if="!isAppBot" ref="headerSlot">
     <slot name="chatbot-header">
       <!--Fallback-->
       <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 right-2 top-2" @click="refreshChat">
@@ -7,8 +7,10 @@
       </button>
     </slot>
   </div>
-  <div v-if="dialog">
-    <div ref="dialogZone" class="fixed top-[var(--header-height)] h-dynamic w-full py-2 px-4 sm:px-6 overflow-auto scroll-smooth">
+  <div v-if="dialog.length > 0">
+    <div ref="dialogZone"
+    class="w-full px-4 sm:px-6 overflow-auto scroll-smooth"
+    :class="(isAppBot)?'bg-white shadow-md rounded pb-4 pt-6':'py-2 fixed top-[var(--header-height)] h-dynamic'">
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
@@ -49,7 +51,7 @@
       </div>
     </div>
   </div>
-  <div ref="inputZone" class="fixed left-0 right-0 bottom-0 space-y-2 p-4 w-full bg-white overflow-hidden">
+  <div ref="inputZone" class="space-y-2 w-full overflow-hidden" :class="(isAppBot)?'':'p-4 fixed left-0 right-0 bottom-0 bg-white'">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
       <button
@@ -71,14 +73,16 @@
         :disabled="isBusy || messagesLeft == 0"
         @keydown.enter="submit"
       />
-      <button class="bg-primary text-white rounded-md px-4 py-2 hover:opacity-85 disabled:cursor-wait" :disabled="isBusy || messagesLeft == 0" @click="submit">
+      <button class="bg-primary text-white rounded-md px-4 py-2 hover:opacity-85 shadow-md disabled:shadow-none disabled:cursor-wait" :disabled="isBusy || messagesLeft == 0" @click="submit">
         <Icon name="ph:paper-plane-right-fill" class="text-xl" />
       </button>
     </div>
+    <slot name="messageCounter"></slot>
   </div>
 </template>
 
 <script setup lang="ts">
+const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
 
 const props = defineProps({
@@ -88,6 +92,7 @@ const props = defineProps({
   },
   isDemoChatbot: { type: Boolean, default: false },
   isEmbedded: { type: Boolean, default: false },
+  isAppBot: { type: Boolean, default: false},
   startMessage: { type: String, default: '' },
   exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
   maxMessages: { type: Number, default: 0 },
@@ -95,6 +100,7 @@ const props = defineProps({
   userNick: { type: String, default: 'YOU' },
   botName: { type: String, default: 'ASSISTANT' },
 });
+const emit = defineEmits(['updateLeft']);
 
 interface DialogItem {
   who: string;
@@ -137,13 +143,14 @@ onBeforeMount(async () => {
   } else {
     session.value = crypto.randomUUID();
   }
+  updateLeftMessages();
   isBusy.value = false;
 });
 
 onMounted(() => {
   let headerHeight = 0;
   let inputHeight = 0;
-  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+  nextTick(() => (dialogZone.value)?dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }):undefined);
   if (headerSlot.value) {
     headerHeight = headerSlot.value.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
@@ -183,7 +190,7 @@ const submit = async () => {
   if (!prompt.value) return;
 
   isBusy.value = true;
-  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+  nextTick(() => (dialogZone.value)?dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }):undefined);
   dialog.value.push(formatDialogItem(props.userNick, prompt.value, null));
   dialog.value.push(formatDialogItem(props.botName, '', null));
   currIdx = dialog.value.length - 1;
@@ -230,7 +237,9 @@ const streamingFetchRequest = async () => {
       handleStreamText(text);
     }
     parseDocsJson();
+    if (props.isDemoChatbot) await updateLeftMessages();
   }
+  if (props.isDemoChatbot) await updateLeftMessages();
 };
 
 const readChunks = (reader: ReadableStreamDefaultReader) => {
@@ -265,7 +274,7 @@ const handleStreamText = (text: string) => {
     }
   } else {
     dialog.value[currIdx].message += text;
-    nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+    nextTick(() => (dialogZone.value)?dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }):undefined);
   }
 };
 
@@ -339,6 +348,24 @@ const refreshChat = () => {
 defineExpose({
   refreshChat,
 });
+
+const updateLeftMessages = async () => {
+  if (!props.isDemoChatbot) {
+    return;
+  }
+
+  const today = new Date().toISOString().substring(0, 10);
+  const query = `min_date=${today}&collection=${props.collection?.name}`;
+  try {
+    const response = await fetch(`/api/brevia/chat_history?${query}`);
+    const data = await response.json();
+    const numItems = data?.meta?.pagination?.count || 0;
+    const left = Math.max(0, parseInt(config.public.demo.maxChatMessages) - parseInt(numItems));
+    emit('updateLeft', left);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const openFeedback = (item: any, evaluation: boolean) => {
   // TBD - remove console.log
