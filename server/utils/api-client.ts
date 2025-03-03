@@ -3,14 +3,13 @@ import { isAxiosError } from 'axios';
 import { H3Event } from 'h3';
 
 async function loadModule(path: string) {
-  try{
-    const module = await import( /* @vite-ignore */path);
+  try {
+    const module = await import(/* @vite-ignore */ path);
     return module;
-  }catch(err){
+  } catch (err) {
     //console.error(err);
     return undefined;
   }
-
 }
 
 export const apiBaseUrl = (event: H3Event, project: string | null = null): string => {
@@ -32,7 +31,12 @@ export const authorizationHeaders = (event: H3Event, project: string | null = nu
   };
 };
 
-export const apiHeaders = (json_content = false, custom = {}, event: H3Event, project: string | null = null) => {
+export const apiHeaders = (
+  json_content = false,
+  custom = {},
+  event: H3Event,
+  project: string | null = null,
+) => {
   const authHeader = authorizationHeaders(event, project);
   if (json_content) {
     return { ...authHeader, ...custom, ...{ 'Content-Type': 'application/json' } };
@@ -41,7 +45,7 @@ export const apiHeaders = (json_content = false, custom = {}, event: H3Event, pr
   return { ...authHeader, ...custom };
 };
 
-export const apiUrl = ( event: H3Event, path = '', project: string | null = null) => {
+export const apiUrl = (event: H3Event, path = '', project: string | null = null) => {
   return `${apiBaseUrl(event, project)}${path}`;
 };
 
@@ -53,7 +57,7 @@ export const apiSecret = (event: H3Event, project: string | null = null): string
 
 export const apiFetch = async (path: string, options: any, event: H3Event) => {
   const currentProject = loadModule('./project');
-  const project = await currentProject.then(m => (m)?m.currentProject(event):null);
+  const project = await currentProject.then((m) => (m ? m.currentProject(event) : null));
   const headers = options.headers || {};
   const authHeader = authorizationHeaders(event, project);
   options.headers = { ...headers, ...authHeader };

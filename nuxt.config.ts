@@ -17,7 +17,7 @@ export default defineNuxtConfig({
         name: '',
         secret: '',
       },
-    }
+    },
   },
   devtools: { enabled: process.env?.DEVTOOLS === 'true' ? true : false },
   imports: {
@@ -26,6 +26,6 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', 'nuxt-icon'],
   $meta: {
-    name: 'nuxt-chatbot-layer'
-  }
+    name: 'nuxt-chatbot-layer',
+  },
 });

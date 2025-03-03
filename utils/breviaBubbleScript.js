@@ -33,13 +33,13 @@ export function initBubble({
   openHtml = openBubbleHtml,
 } = {}) {
   const button = document.createElement('button');
-  button.id = "chat-iframe-button";
+  button.id = 'chat-iframe-button';
   button.innerHTML = buttonHtml;
   Object.assign(button.style, buttonStyle);
   document.body.appendChild(button);
 
   const iframe = document.createElement('iframe');
-  iframe.id = "chat-iframe";
+  iframe.id = 'chat-iframe';
   iframe.src = iframeSrc;
   Object.assign(iframe.style, iframeStyle);
   document.body.appendChild(iframe);
