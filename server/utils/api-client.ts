@@ -1,13 +1,13 @@
 import type { AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
-import { H3Event } from 'h3';
+import type { H3Event } from 'h3';
 
 async function loadModule(path: string) {
   try {
     const module = await import(/* @vite-ignore */ path);
     return module;
   } catch (err) {
-    //console.error(err);
+    console.error(err);
     return undefined;
   }
 }
