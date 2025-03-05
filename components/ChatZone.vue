@@ -88,7 +88,6 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig();
 const { formatResponse, llmResponseFormat } = useResponseFormat();
 
 const props = defineProps({
@@ -351,9 +350,8 @@ defineExpose({
   refreshChat,
 });
 
-
 const openFeedback = (item: any, evaluation: boolean) => {
   // TBD - remove console.log
-  // console.log(item, evaluation);
+  console.log(item, evaluation);
 };
 </script>

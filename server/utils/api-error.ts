@@ -2,7 +2,6 @@ import type { AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
 import type { H3Event } from 'h3';
 
-
 export const handleApiError = async (
   event: H3Event,
   error: AxiosError | any,
