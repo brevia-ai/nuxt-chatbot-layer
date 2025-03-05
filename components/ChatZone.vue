@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!isAppBot" ref="headerSlot">
+  <div v-if="isFullPage" ref="headerSlot">
     <slot name="chatbot-header">
       <!--Fallback-->
       <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 right-2 top-2" @click="refreshChat">
@@ -11,7 +11,7 @@
     <div
       ref="dialogZone"
       class="w-full px-4 sm:px-6 overflow-auto scroll-smooth"
-      :class="isAppBot ? 'bg-white shadow-md rounded pb-4 pt-6' : 'py-2 fixed top-[var(--header-height)] h-dynamic'"
+      :class="!isFullPage ? 'bg-white shadow-md rounded pb-4 pt-6' : 'py-2 fixed top-[var(--header-height)] h-dynamic'"
     >
       <div class="flex flex-col space-y-6 pb-4">
         <div
@@ -53,7 +53,7 @@
       </div>
     </div>
   </div>
-  <div ref="inputZone" class="space-y-2 w-full overflow-hidden" :class="isAppBot ? '' : 'p-4 fixed left-0 right-0 bottom-0 bg-white'">
+  <div ref="inputZone" class="space-y-2 w-full overflow-hidden" :class="!isFullPage ? '' : 'p-4 fixed left-0 right-0 bottom-0 bg-white'">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
       <button
@@ -96,8 +96,7 @@ const props = defineProps({
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isEmbedded: { type: Boolean, default: false },
-  isAppBot: { type: Boolean, default: false },
+  isFullPage: { type: Boolean, default: true }, // ChatZone component is full page or not?
   startMessage: { type: String, default: '' },
   exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
   maxMessages: { type: Number, default: 0 },
