@@ -3,11 +3,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     apiSecret: '',
     apiBaseUrl: '',
-    public: {
-      demo: {
-        maxChatMessages: '99999', // chatbot msg number per day -> overridden by app
-      },
-    },
     // brevia integration session & auth credentials
     session: {
       name: '',
