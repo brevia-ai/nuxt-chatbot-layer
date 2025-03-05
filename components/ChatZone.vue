@@ -96,7 +96,6 @@ const props = defineProps({
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isDemoChatbot: { type: Boolean, default: false },
   isEmbedded: { type: Boolean, default: false },
   isAppBot: { type: Boolean, default: false },
   startMessage: { type: String, default: '' },
@@ -149,7 +148,6 @@ onBeforeMount(async () => {
   } else {
     session.value = crypto.randomUUID();
   }
-  updateLeftMessages();
   isBusy.value = false;
 });
 
@@ -179,6 +177,7 @@ watch(messagesLeft, (newVal) => {
   if (newVal <= 0) {
     dialog.value.push(formatDialogItem(props.botName, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
   }
+  emit('updateLeft', newVal);
 });
 
 // methods
@@ -203,7 +202,7 @@ const submit = async () => {
 
   try {
     await streamingFetchRequest();
-    if (props.maxMessages) {
+    if (props.maxMessages > 0) {
       messagesLeft.value = messagesLeft.value - 1;
     }
     isBusy.value = false;
@@ -243,9 +242,7 @@ const streamingFetchRequest = async () => {
       handleStreamText(text);
     }
     parseDocsJson();
-    if (props.isDemoChatbot) await updateLeftMessages();
   }
-  if (props.isDemoChatbot) await updateLeftMessages();
 };
 
 const readChunks = (reader: ReadableStreamDefaultReader) => {
@@ -332,7 +329,7 @@ const loadPreviousMessages = async (id: any) => {
     }
     dialog.value.push(...loadedDialog);
     const mUsed = dialog.value.filter((el) => el.who == props.userNick).length;
-    if (props.maxMessages) {
+    if (props.maxMessages > 0) {
       messagesLeft.value = props.maxMessages - mUsed;
     }
   } catch (error) {
@@ -346,7 +343,7 @@ const refreshChat = () => {
   if (props.startMessage) {
     dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
   }
-  if (props.maxMessages) {
+  if (props.maxMessages > 0) {
     messagesLeft.value = props.maxMessages;
   }
 };
@@ -355,26 +352,9 @@ defineExpose({
   refreshChat,
 });
 
-const updateLeftMessages = async () => {
-  if (!props.isDemoChatbot) {
-    return;
-  }
-
-  const today = new Date().toISOString().substring(0, 10);
-  const query = `min_date=${today}&collection=${props.collection?.name}`;
-  try {
-    const response = await fetch(`/api/brevia/chat_history?${query}`);
-    const data = await response.json();
-    const numItems = data?.meta?.pagination?.count || 0;
-    const left = Math.max(0, parseInt(config.public.demo.maxChatMessages) - parseInt(numItems));
-    emit('updateLeft', left);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 const openFeedback = (item: any, evaluation: boolean) => {
   // TBD - remove console.log
-  console.log(item, evaluation);
+  // console.log(item, evaluation);
 };
 </script>
