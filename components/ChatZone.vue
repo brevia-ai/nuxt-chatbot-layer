@@ -1,5 +1,5 @@
 <template>
-  <div ref="headerSlot">
+  <div v-if="isFullPage" ref="headerSlot">
     <slot name="chatbot-header">
       <!--Fallback-->
       <button class="fixed z-50 bg-primary text-white rounded-md p-2 border-white border-2 right-2 top-2" @click="refreshChat">
@@ -7,8 +7,12 @@
       </button>
     </slot>
   </div>
-  <div v-if="dialog">
-    <div ref="dialogZone" class="fixed top-[var(--header-height)] h-dynamic w-full py-2 px-4 sm:px-6 overflow-auto scroll-smooth">
+  <div v-if="dialog.length > 0">
+    <div
+      ref="dialogZone"
+      class="w-full px-4 sm:px-6 overflow-auto scroll-smooth"
+      :class="!isFullPage ? 'bg-white shadow-md rounded pb-4 pt-6' : 'py-2 fixed top-[var(--header-height)] h-dynamic'"
+    >
       <div class="flex flex-col space-y-6 pb-4">
         <div
           v-for="(item, i) in dialog"
@@ -49,7 +53,7 @@
       </div>
     </div>
   </div>
-  <div ref="inputZone" class="fixed left-0 right-0 bottom-0 space-y-2 p-4 w-full bg-white overflow-hidden">
+  <div ref="inputZone" class="space-y-2 w-full overflow-hidden" :class="!isFullPage ? '' : 'p-4 fixed left-0 right-0 bottom-0 bg-white'">
     <!-- SUGGESTED QUESTIONS -->
     <div v-if="exampleQuestions?.length != 0" class="flex flex-row grow max-h-24 gap-x-2 justify-start overflow-x-auto overflow-y-hidden w-auto">
       <button
@@ -71,10 +75,15 @@
         :disabled="isBusy || messagesLeft == 0"
         @keydown.enter="submit"
       />
-      <button class="bg-primary text-white rounded-md px-4 py-2 hover:opacity-85 disabled:cursor-wait" :disabled="isBusy || messagesLeft == 0" @click="submit">
+      <button
+        class="bg-primary text-white rounded-md px-4 py-2 hover:opacity-85 shadow-md disabled:shadow-none disabled:cursor-wait"
+        :disabled="isBusy || messagesLeft == 0"
+        @click="submit"
+      >
         <Icon name="ph:paper-plane-right-fill" class="text-xl" />
       </button>
     </div>
+    <slot name="messageCounter"></slot>
   </div>
 </template>
 
@@ -86,8 +95,7 @@ const props = defineProps({
     type: Object as PropType<{ name?: string; uuid?: string; cmetadata?: any }>,
     default: () => ({ name: '', uuid: '', cmetadata: {} }),
   },
-  isDemoChatbot: { type: Boolean, default: false },
-  isEmbedded: { type: Boolean, default: false },
+  isFullPage: { type: Boolean, default: true }, // ChatZone component is full page or not?
   startMessage: { type: String, default: '' },
   exampleQuestions: { type: Array as PropType<string[]>, default: () => [] },
   maxMessages: { type: Number, default: 0 },
@@ -95,6 +103,7 @@ const props = defineProps({
   userNick: { type: String, default: 'YOU' },
   botName: { type: String, default: 'ASSISTANT' },
 });
+const emit = defineEmits(['updateLeft']);
 
 interface DialogItem {
   who: string;
@@ -142,7 +151,7 @@ onBeforeMount(async () => {
 onMounted(() => {
   let headerHeight = 0;
   let inputHeight = 0;
-  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+  nextTick(() => (dialogZone.value ? dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }) : undefined));
   if (headerSlot.value) {
     headerHeight = headerSlot.value.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
@@ -165,6 +174,7 @@ watch(messagesLeft, (newVal) => {
   if (newVal <= 0) {
     dialog.value.push(formatDialogItem(props.botName, 'Hai esaurito il numero di messaggi per questa sessione', null, undefined, true));
   }
+  emit('updateLeft', newVal);
 });
 
 // methods
@@ -182,14 +192,14 @@ const submit = async () => {
   if (!prompt.value) return;
 
   isBusy.value = true;
-  nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+  nextTick(() => (dialogZone.value ? dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }) : undefined));
   dialog.value.push(formatDialogItem(props.userNick, prompt.value, null));
   dialog.value.push(formatDialogItem(props.botName, '', null));
   currIdx = dialog.value.length - 1;
 
   try {
     await streamingFetchRequest();
-    if (props.maxMessages) {
+    if (props.maxMessages > 0) {
       messagesLeft.value = messagesLeft.value - 1;
     }
     isBusy.value = false;
@@ -263,7 +273,7 @@ const handleStreamText = (text: string) => {
     }
   } else {
     dialog.value[currIdx].message += text;
-    nextTick(() => dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }));
+    nextTick(() => (dialogZone.value ? dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }) : undefined));
   }
 };
 
@@ -315,7 +325,7 @@ const loadPreviousMessages = async (id: any) => {
     }
     dialog.value.push(...loadedDialog);
     const mUsed = dialog.value.filter((el) => el.who == props.userNick).length;
-    if (props.maxMessages) {
+    if (props.maxMessages > 0) {
       messagesLeft.value = props.maxMessages - mUsed;
     }
   } catch (error) {
@@ -329,7 +339,7 @@ const refreshChat = () => {
   if (props.startMessage) {
     dialog.value.push(formatDialogItem(props.botName, props.startMessage, null, ''));
   }
-  if (props.maxMessages) {
+  if (props.maxMessages > 0) {
     messagesLeft.value = props.maxMessages;
   }
 };

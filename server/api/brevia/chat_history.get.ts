@@ -13,8 +13,7 @@ export default defineEventHandler(async (event) => {
     });
 
     return response;
-  } catch (err: any) {
-    console.log(err);
-    return { error: err?.message || 'Unknown error' };
+  } catch (error) {
+    return handleApiError(event, error);
   }
 });
