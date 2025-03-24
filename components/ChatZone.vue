@@ -39,13 +39,15 @@
             v-if="chatActions && !isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
             class="bg-neutral-600 px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
           >
-            <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'hover:bg-neutral-500 hover:rounded-md cursor-pointer' : ''">
-              <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-[--color-text-success]" />
-              <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-[--color-text-error]" />
-              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
-            </div>
-            <div v-if="item.evaluation == null" class="px-1.5 pb-1 hover:bg-neutral-500 hover:rounded-md cursor-pointer">
-              <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
+            <div v-if="evaluationEnabled">
+              <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'hover:bg-neutral-500 hover:rounded-md cursor-pointer' : ''">
+                <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-green-500" />
+                <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-red-500" />
+                <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
+              </div>
+              <div v-if="item.evaluation == null" class="px-1.5 pb-1 hover:bg-neutral-500 hover:rounded-md cursor-pointer">
+                <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
+              </div>
             </div>
             <slot name="extra-icons" />
           </div>
@@ -102,8 +104,9 @@ const props = defineProps({
   chatActions: { type: Boolean, default: true },
   userNick: { type: String, default: 'YOU' },
   botName: { type: String, default: 'ASSISTANT' },
+  evaluationEnabled: { type: Boolean, default: true },
 });
-const emit = defineEmits(['updateLeft']);
+const emit = defineEmits(['updateLeft', 'feedback']);
 
 interface DialogItem {
   who: string;
@@ -111,6 +114,12 @@ interface DialogItem {
   evaluation: any;
   uuid: string;
   error: boolean;
+}
+
+interface Feedback {
+  uuid: string;
+  session: string;
+  evaluation: boolean;
 }
 
 const headerSlot = ref();
@@ -123,6 +132,7 @@ const dialog = ref<DialogItem[]>([]);
 const docs = ref<any>([]);
 const historyId = ref('');
 const canSeeDocs = ref(false);
+const feedback = ref<Feedback>({ uuid: '', evaluation: true, session: '' });
 const session = useCookie('session');
 const messagesLeft = ref(props.maxMessages || 100);
 let docsJsonString = '';
@@ -346,12 +356,21 @@ const refreshChat = () => {
   }
 };
 
+const getResponseDocs = () => {
+  return docs.value;
+};
+
 defineExpose({
   refreshChat,
+  getResponseDocs,
 });
 
 const openFeedback = (item: any, evaluation: boolean) => {
   // TBD - remove console.log
-  console.log(item, evaluation);
+  feedback.value.uuid = item.uuid;
+  feedback.value.evaluation = evaluation;
+  feedback.value.session = session.value || '';
+
+  emit('feedback', feedback.value);
 };
 </script>
