@@ -1,4 +1,4 @@
-import { handleApiError } from "../../utils/api-error";
+import { handleApiError } from '../../utils/api-error';
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
