@@ -163,11 +163,11 @@ onMounted(() => {
   let inputHeight = 0;
   nextTick(() => (dialogZone.value ? dialogZone.value.scrollTo({ top: dialogZone.value.scrollHeight, behavior: 'smooth' }) : undefined));
   if (headerSlot.value) {
-    headerHeight = headerSlot.value.getBoundingClientRect().height;
+    headerHeight = headerSlot.value.getBoundingClientRect().height || 44;
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
   }
   if (inputZone.value) {
-    inputHeight = inputZone.value.getBoundingClientRect().height;
+    inputHeight = inputZone.value.getBoundingClientRect().height || 72;
     document.documentElement.style.setProperty('--input-height', `${inputHeight}px`);
   }
 });
