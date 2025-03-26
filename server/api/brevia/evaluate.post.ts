@@ -1,3 +1,5 @@
+import { handleApiError } from "../../utils/api-error";
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const url = config.apiBaseUrl + `/evaluate`;
@@ -14,6 +16,6 @@ export default defineEventHandler(async (event) => {
     return response;
   } catch (err: any) {
     console.log(err);
-    return { error: err?.message || 'Unknown error' };
+    return handleApiError(event, err);
   }
 });
