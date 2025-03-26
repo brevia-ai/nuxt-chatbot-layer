@@ -39,15 +39,13 @@
             v-if="chatActions && !isBusy && showResponseMenu && hovered === i && hovered != 0 && item.who != userNick && !item.error"
             class="bg-neutral-600 px-2 py-0.5 absolute -bottom-5 right-4 z-50 rounded-md flex flex-row"
           >
-            <div v-if="evaluationEnabled">
-              <div class="px-1.5 pb-1" :class="item.evaluation == null ? 'hover:bg-neutral-500 hover:rounded-md cursor-pointer' : ''">
-                <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-green-500" />
-                <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-red-500" />
-                <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
-              </div>
-              <div v-if="item.evaluation == null" class="px-1.5 pb-1 hover:bg-neutral-500 hover:rounded-md cursor-pointer">
-                <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
-              </div>
+            <div v-if="evaluationEnabled" class="px-1.5 pb-1" :class="item.evaluation == null ? 'hover:bg-neutral-500 hover:rounded-md cursor-pointer' : ''">
+              <Icon v-if="item.evaluation == true" name="ph:thumbs-up-fill" class="text-green-500" />
+              <Icon v-else-if="item.evaluation == false" name="ph:thumbs-down-fill" class="text-red-500" />
+              <Icon v-else name="ph:thumbs-up-fill" class="text-white" @click="openFeedback(item, true)" />
+            </div>
+            <div v-if="item.evaluation == null && evaluationEnabled" class="px-1.5 pb-1 hover:bg-neutral-500 hover:rounded-md cursor-pointer">
+              <Icon name="ph:thumbs-down-fill" class="text-white" @click="openFeedback(item, false)" />
             </div>
             <slot name="extra-icons" />
           </div>
