@@ -30,7 +30,7 @@ const isBusy = ref(false);
 const uuid = useRuntimeConfig().public.collectionUuid;
 isBusy.value = true;
 const data = await $fetch(`/api/brevia/collections?uuid=${uuid}`);
-collection.value = data;
+collection.value = data || {};
 isBusy.value = false;
 
 onMounted(() => {
