@@ -356,7 +356,7 @@ const getResponseDocs = () => {
   return docs.value;
 };
 
-const updateFeebackThumbs = () => {
+const updateFeedbackThumbs = () => {
   const message = dialog.value.find((el) => el.uuid === feedback.value.uuid);
   if (message) {
     message.evaluation = feedback.value.evaluation;
@@ -366,7 +366,7 @@ const updateFeebackThumbs = () => {
 defineExpose({
   refreshChat,
   getResponseDocs,
-  updateFeebackThumbs,
+  updateFeedbackThumbs,
 });
 
 const openFeedback = (item: any, evaluation: boolean) => {
