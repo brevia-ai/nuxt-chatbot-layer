@@ -1,7 +1,7 @@
 {
   "name": "nuxt-chatbot-layer",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "./nuxt.config.ts",
   "scripts": {
     "dev": "nuxt dev .playground",
