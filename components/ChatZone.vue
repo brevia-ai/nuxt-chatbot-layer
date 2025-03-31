@@ -141,6 +141,7 @@ const showResponseMenu = ref(true);
 
 let collectionName = '';
 const responseFormat = ref('text');
+const showLastMsgDocs = computed(() => hovered.value === dialog.value.length - 1 && canSeeDocs.value);
 
 onBeforeMount(async () => {
   if (props.startMessage) {
@@ -367,6 +368,7 @@ defineExpose({
   refreshChat,
   getResponseDocs,
   updateFeedbackThumbs,
+  showLastMsgDocs,
 });
 
 const openFeedback = (item: any, evaluation: boolean) => {
