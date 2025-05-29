@@ -235,7 +235,8 @@ const streamingFetchRequest = async () => {
     body: JSON.stringify({
       question,
       collection: collectionName,
-      source_docs: true,
+      mode: collectionName ? 'rag' : 'conversation',
+      source_docs: collectionName ? true : false,
       streaming: true,
     }),
   });
