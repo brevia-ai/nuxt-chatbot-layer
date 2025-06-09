@@ -103,6 +103,7 @@ const props = defineProps({
   userNick: { type: String, default: 'YOU' },
   botName: { type: String, default: 'ASSISTANT' },
   evaluationEnabled: { type: Boolean, default: true },
+  config: { type: Object, default: undefined },
 });
 const emit = defineEmits(['updateLeft', 'feedback']);
 
@@ -235,6 +236,7 @@ const streamingFetchRequest = async () => {
     body: JSON.stringify({
       question,
       ...(collectionName.length > 0 ? { collection: collectionName } : {}),
+      ...(props.config ? { config: props.config } : {}),
       mode: collectionName ? 'rag' : 'conversation',
       source_docs: collectionName ? true : false,
       streaming: true,
