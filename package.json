@@ -14,6 +14,9 @@
     "format": "prettier --write \"{components,pages,plugins,middleware,layouts,composables,assets}/**/*.{js,ts,vue,css,scss,json,md}\"",
     "format:check": "prettier --check \"{components,pages,plugins,middleware,layouts,composables,assets}/**/*.{js,ts,vue,css,scss,json,md}\""
   },
+  "dependencies": {
+    "nuxt-icon": "^0.6.6",
+  },
   "devDependencies": {
     "@nuxt/eslint": "latest",
     "@nuxt/eslint-config": "^0.7.5",
@@ -23,7 +26,6 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.1",
     "nuxt": "^3.15.1",
-    "nuxt-icon": "^0.6.6",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "vue": "latest",
