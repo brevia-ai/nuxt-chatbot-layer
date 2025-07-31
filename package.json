@@ -15,7 +15,7 @@
     "format:check": "prettier --check \"{components,pages,plugins,middleware,layouts,composables,assets}/**/*.{js,ts,vue,css,scss,json,md}\""
   },
   "dependencies": {
-    "nuxt-icon": "^0.6.6",
+    "nuxt-icon": "^0.6.6"
   },
   "devDependencies": {
     "@nuxt/eslint": "latest",
